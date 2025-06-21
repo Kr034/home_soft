@@ -1,30 +1,29 @@
 #!/bin/bash
 
-APP_NAME="my_automation_app"
-OLLAMA_PID_FILE=".ollama.pid"
+APP_CONTAINER_NAME="home_soft"
+MODEL_NAME="codellama:7b-instruct"
 
 start() {
-  echo "🟢 Lancement de Ollama..."
-  ollama run codellama:7b-instruct > /dev/null 2>&1 &
-  echo $! > "$OLLAMA_PID_FILE"
-  echo "✅ Ollama lancé avec PID $(cat "$OLLAMA_PID_FILE")"
+  echo "🧠 Démarrage d’Ollama avec le modèle : $MODEL_NAME"
+  ollama run "$MODEL_NAME" &
+  OLLAMA_PID=$!
+  echo $OLLAMA_PID > .ollama.pid
 
-  echo "🐳 Lancement de Docker..."
-  docker compose up --build -d
-  echo "✅ Docker lancé"
+  echo "🚀 Lancement du conteneur Docker ($APP_CONTAINER_NAME)..."
+  docker-compose up -d
+  echo "🌐 Application disponible sur http://localhost:8000"
 }
 
 stop() {
-  echo "🛑 Arrêt de Docker..."
-  docker compose down
+  echo "🛑 Arrêt de l'application Docker..."
+  docker-compose down
 
-  if [ -f "$OLLAMA_PID_FILE" ]; then
-    OLLAMA_PID=$(cat "$OLLAMA_PID_FILE")
-    echo "🛑 Arrêt de Ollama (PID $OLLAMA_PID)..."
-    kill "$OLLAMA_PID" && rm "$OLLAMA_PID_FILE"
-    echo "✅ Ollama arrêté"
+  if [ -f .ollama.pid ]; then
+    OLLAMA_PID=$(cat .ollama.pid)
+    echo "🛑 Arrêt du modèle Ollama (PID $OLLAMA_PID)..."
+    kill "$OLLAMA_PID" && rm .ollama.pid
   else
-    echo "⚠️  Pas de processus Ollama enregistré"
+    echo "⚠️ Aucun modèle Ollama détecté en cours."
   fi
 }
 
@@ -35,16 +34,16 @@ restart() {
 }
 
 status() {
-  echo "📦 Docker :"
-  docker compose ps
+  echo "📦 État du conteneur Docker :"
+  docker ps --filter "name=$APP_CONTAINER_NAME"
+  
+  echo
+  echo "🧠 État d'Ollama :"
+  curl -s http://localhost:11434 || echo "❌ Ollama non actif."
+}
 
-  echo ""
-  if [ -f "$OLLAMA_PID_FILE" ]; then
-    echo "🤖 Ollama PID : $(cat "$OLLAMA_PID_FILE")"
-    ps -p "$(cat "$OLLAMA_PID_FILE")" >/dev/null && echo "✅ Ollama en cours d'exécution" || echo "❌ Ollama inactif"
-  else
-    echo "❌ Ollama non lancé"
-  fi
+help() {
+  echo "🛠️  Usage : ./manage.sh {start|stop|restart|status}"
 }
 
 case "$1" in
@@ -52,7 +51,5 @@ case "$1" in
   stop) stop ;;
   restart) restart ;;
   status) status ;;
-  *)
-    echo "Usage : $0 {start|stop|restart|status}"
-    ;;
+  *) help ;;
 esac
