@@ -1,0 +1,17 @@
+[2025-06-21 15:57:46] 🧠 Démarrage d’Ollama avec le modèle : deepseek-r1:32b
+[2025-06-21 15:57:46] 🚀 Lancement du conteneur Docker (home_soft)...
+time="2025-06-21T15:57:46+02:00" level=warning msg="/home/corentin/HomeSoft/home_soft/myapp/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+[?25l[?2026h[?25l[1G[K[?25h[?2026l[2K[1G[?25h[?25l[?25h Container my_automation_app  Creating
+ app Published ports are discarded when using host network mode 
+ Container my_automation_app  Created
+ Container my_automation_app  Starting
+ Container my_automation_app  Started
+[2025-06-21 15:57:46] 🌐 Application disponible sur http://localhost:8000
+[2025-06-21 15:58:31] 🛑 Arrêt du conteneur Docker (home_soft)...
+time="2025-06-21T15:58:31+02:00" level=warning msg="/home/corentin/HomeSoft/home_soft/myapp/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Container my_automation_app  Stopping
+ Container my_automation_app  Stopped
+ Container my_automation_app  Removing
+ Container my_automation_app  Removed
+[2025-06-21 15:58:31] 🔒 Tentative d’arrêt de Ollama...
+[2025-06-21 15:58:31] ⚠️ Aucun processus Ollama trouvé.

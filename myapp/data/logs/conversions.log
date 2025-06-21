@@ -5,3 +5,4 @@
 [FAIL] 2025-06-20 23:45:08.904785 Failed to convert: /data/pasted/ok1.md
 [FAIL] 2025-06-21 00:06:32.941853 Failed to convert: /data/pasted/test.md
 [OK] 2025-06-21 00:07:20.776469 Converted: /data/pasted/10.md -> /data/outputs/10.pdf
+[OK] 2025-06-21 12:02:16.803911 Converted: /data/pasted/vini-docker.md -> /data/outputs/vini-docker.pdf

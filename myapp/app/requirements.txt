@@ -6,4 +6,4 @@ watchdog
 jinja2
 PyYAML
 requests
-markdown
+markdown2

@@ -6,11 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from converter import convert_md_to_pdf
 from pathlib import Path
-import os
+import uuid, json, os
 import yaml
 import requests
-import json
 import datetime
+import markdown2
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -22,6 +22,8 @@ PASTE_DIR = "/data/pasted"
 SCRIPTS_DIR = "/data/scripts"
 HISTORY_DIR = "/data/history"
 
+DATA_DIR = Path("data")
+HISTORY_FILE = DATA_DIR / "history" / "conversations.json"
 for d in [UPLOAD_DIR, OUTPUT_DIR, LOG_DIR, PASTE_DIR, SCRIPTS_DIR, HISTORY_DIR]:
     os.makedirs(d, exist_ok=True)
 
@@ -29,7 +31,15 @@ def load_categories(path="categories.yaml"):
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
-@app.get("/")
+def load_conversations():
+    items = []
+    for fname in sorted(os.listdir(HISTORY_DIR), reverse=True):
+        with open(os.path.join(HISTORY_DIR, fname)) as f:
+            content = json.load(f)
+            items.append({"id": fname[:-5], "created_at": content.get("created_at")})
+    return items
+
+@app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     uploads = sorted([f.name for f in Path(UPLOAD_DIR).glob("*.md")])
     outputs = sorted([f.name for f in Path(OUTPUT_DIR).glob("*.pdf")])
@@ -37,7 +47,9 @@ async def dashboard(request: Request):
     log_path = Path(LOG_DIR) / "conversions.log"
     if log_path.exists():
         logs = log_path.read_text().splitlines()[-10:]
+
     categories = load_categories()
+
     scripts = []
     for fname in os.listdir(SCRIPTS_DIR):
         path = os.path.join(SCRIPTS_DIR, fname)
@@ -52,13 +64,23 @@ async def dashboard(request: Request):
             desc = ""
         scripts.append({"name": fname, "desc": desc})
 
+    # Récupération des discussions IA
+    history = []
+    if HISTORY_FILE.exists():
+        try:
+            with open(HISTORY_FILE, "r") as f:
+                history = json.load(f)
+        except json.JSONDecodeError:
+            history = []
+
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "uploads": uploads,
         "outputs": outputs,
         "logs": logs,
         "categories": categories,
-        "scripts": scripts
+        "scripts": scripts,
+        "ai_history": history
     })
 
 @app.get("/edit")
@@ -157,48 +179,80 @@ def history_page(request: Request):
         "conversations": conversations
     })
 
-@app.post("/ask-ai")
-async def ask_ai(request: Request):
-    data = await request.json()
-    prompt = data.get("prompt", "")
-    history_path = "/data/history/conversations.json"
+@app.post("/new-chat", response_class=JSONResponse)
+async def new_chat():
+    conv_id = str(uuid.uuid4())
+    file_path = Path(HISTORY_DIR) / f"{conv_id}.json"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text(json.dumps({
+        "id": conv_id,
+        "created_at": str(uuid.uuid1().time),  # ou utilise datetime.now().isoformat()
+        "messages": []
+    }))
+    return {"id": conv_id}
 
+@app.get("/data/history/{chat_id}.json")
+async def get_chat_json(chat_id: str):
+    path = os.path.join(HISTORY_DIR, f"{chat_id}.json")
+    if os.path.exists(path):
+        return FileResponse(path, media_type="application/json")
+    return JSONResponse({"error": "Not found"}, status_code=404)
+
+@app.post("/ask-ai-chat", response_class=JSONResponse)
+async def ask_ai_chat(request: Request):
+    data = await request.json()
+    conv_id = data["conv_id"]
+    prompt = data["prompt"]
+
+    path = os.path.join(HISTORY_DIR, f"{conv_id}.json")
+
+    # 1. Charger les anciens messages
+    if os.path.exists(path):
+        with open(path) as f:
+            content = json.load(f)
+    else:
+        content = {"messages": []}
+
+    # 2. Ajouter le message utilisateur
+    content["messages"].append({
+        "role": "user",
+        "text": prompt
+    })
+
+    # 3. Convertir les messages pour Ollama
+    ollama_messages = [{"role": "system", "content": "Tu es un assistant utile, parlant français. L'utilisateur s'appelle Corentin."}]
+    for m in content["messages"]:
+        ollama_messages.append({
+            "role": m["role"],
+            "content": m["text"]
+        })
+
+    # 4. Appeler Ollama avec le contexte
     try:
-        r = requests.post("http://localhost:11434/api/generate", json={
-            "model": "codellama:7b-instruct",
-            "prompt": prompt,
+        r = requests.post("http://localhost:11434/api/chat", json={
+            "model": "deepseek-r1:32b",
+            "messages": ollama_messages,
             "stream": False
         })
         result = r.json()
-        response = result.get("response", "Pas de réponse.")
-
-        # Enregistrer la discussion
-        entry = {
-            "prompt": prompt,
-            "response": response,
-            "timestamp": datetime.datetime.now().isoformat()
-        }
-
-
-        if not os.path.exists(history_path) or os.path.getsize(history_path) == 0:
-            with open(history_path, "w") as f:
-                json.dump([], f)
-
-        # Chargement sécurisé
-        try:
-            with open(history_path, "r") as f:
-                history = json.load(f)
-        except json.JSONDecodeError:
-            history = []
-
-        history.append(entry)
-
-        with open(history_path, "w") as f:
-            json.dump(history, f, indent=2)
-
-        return JSONResponse(content={"response": response})
+        response_text = result.get("message", {}).get("content", "❌ Aucune réponse.")
     except Exception as e:
-        return JSONResponse(content={"response": f"Erreur : {e}"}, status_code=500)
+        response_text = f"Erreur lors de l'appel au modèle : {e}"
+
+    # 5. Ajouter la réponse de l'IA
+    content["messages"].append({
+        "role": "assistant",
+        "text": response_text
+    })
+
+    # 6. Sauvegarder la conversation mise à jour
+    with open(path, "w") as f:
+        json.dump(content, f, ensure_ascii=False, indent=2)
+
+    # 7. Convertir la réponse en HTML (Markdown si tu veux)
+    html = markdown2.markdown(response_text)
+
+    return {"response": html}
 
 @app.get("/scripts-list")
 async def list_scripts():
