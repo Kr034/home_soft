@@ -16,74 +16,93 @@ Une application web simple et modulaire conçue pour :
 - Catégorisation dynamique via `categories.yaml`
 
 ### 🧠 Assistant IA (via Ollama)
-- Utilise des modèles comme `codellama` ou `mistral` en local
+- Utilise des modèles comme `codellama`, `mistral`, `phi3` en local
 - Pose des questions liées à la programmation, bash, Python, etc.
-- Fonctionne hors ligne, **aucune donnée envoyée à des serveurs distants**
+- Fonctionne **100% hors ligne**, aucune donnée externe n’est transmise
 
 ### 📄 Conversion Markdown → PDF
 - Téléverser ou coller ton Markdown
-- Conversion directe via Pandoc + LaTeX
-- Historique et logs consultables
+- Conversion directe via Pandoc + LaTeX (contenus gérés par Docker)
+- Historique et logs disponibles
 
 ---
 
 ## 🧰 Stack technique
 
-- **FastAPI** + **HTMX** pour le backend dynamique
-- **Jinja2** pour le templating
-- **TailwindCSS** pour le design moderne
-- **Ollama** pour l’IA locale (LLM)
-- **Pandoc** + `texlive-*` pour les conversions
+- **FastAPI** + **HTMX** pour un backend interactif
+- **Jinja2** pour le rendu HTML
+- **TailwindCSS** pour un style moderne responsive
+- **Ollama** pour l’IA locale
+- **Pandoc** + LaTeX installés dans le conteneur
 
 ---
 
-## 📦 Installation
+## ⚙️ Installation & Lancement
 
-### 1. Dépendances système
+### 1. Installer Ollama
+
+> Ollama doit tourner **sur ta machine hôte**, pas dans le conteneur Docker.
 
 ```bash
-# Arch Linux
-sudo pacman -S pandoc texlive-core texlive-latexextra
-
-# Ollama (pour l'IA locale)
 curl -fsSL https://ollama.com/install.sh | sh
 ````
 
-### 2. Cloner et installer les dépendances
+Télécharger ensuite le modèle souhaité :
 
 ```bash
-git clone https://github.com/Kr034/home_soft.git
-cd home_soft
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+ollama pull codellama:7b-instruct
 ```
-
-### 3. Lancer l'application
-
-```bash
-uvicorn main:app --reload
-```
-
-L’application sera disponible sur [http://localhost:8000](http://localhost:8000)
 
 ---
 
-## 🧠 Lancer le modèle IA local
+### 2. Lancer l’application
+
+Utilise le script de gestion inclus :
 
 ```bash
-ollama run codellama:7b-instruct
+./manage.sh start
 ```
 
-Tu peux aussi essayer :
+Ce script :
+
+* lance l’application via Docker,
+* rend l’interface dispo sur [http://localhost:8000](http://localhost:8000),
+* et se connecte à Ollama (sur l’hôte).
+
+> Pour arrêter l’application :
 
 ```bash
-ollama run mistral
-ollama run phi3
+./manage.sh stop
+```
+---
+
+### 🔁 Changer de modèle Ollama
+
+Par défaut, le script utilise **`codellama:7b-instruct`**.
+
+Si tu veux utiliser un autre modèle (comme `mistral` ou `phi3`), édite le fichier `manage.sh` et modifie cette ligne :
+
+```bash
+MODEL="codellama:7b-instruct"
 ```
 
-Ensuite, l’interface `/assistant` permet de dialoguer avec le modèle local.
+Par exemple, pour utiliser Mistral :
 
+```bash
+MODEL="deepseek-r1:32b"
+```
+
+Assure-toi que le modèle est bien téléchargé :
+
+```bash
+ollama pull deepseek-r1:32b
+```
+
+Puis relance l’application :
+
+```bash
+./manage.sh restart
+```
 ---
 
 ## 📁 Structure
@@ -93,66 +112,62 @@ Ensuite, l’interface `/assistant` permet de dialoguer avec le modèle local.
 ├── app
 │   ├── categories.yaml
 │   ├── converter.py
-│   ├── data
-│   │   └── conversations.json
 │   ├── main.py
-│   ├── __pycache__
-│   │   ├── converter.cpython-311.pyc
-│   │   ├── dashboard.cpython-311.pyc
-│   │   └── main.cpython-311.pyc
 │   ├── requirements.txt
-│   └── templates
+│   └── templates/
 │       ├── dashboard.html
-│       └── sections
+│       └── sections/
 │           ├── conversion.html
 │           ├── default.html
 │           ├── edit_script.html
 │           ├── generation.html
 │           ├── history.html
 │           └── scripts.html
-├── data
-│   ├── history
+├── data/
+│   ├── history/
 │   │   └── conversations.json
-│   ├── logs
+│   ├── logs/
 │   │   └── conversions.log
-│   ├── outputs
-│   ├── pasted
-│   ├── scripts
+│   ├── outputs/
+│   ├── pasted/
+│   ├── scripts/
 │   │   └── test_ollama.sh
-│   └── uploads
+│   └── uploads/
+├── manage.sh
 ├── docker-compose.yml
 └── Dockerfile
-
 ```
 
 ---
 
-## 📌 To-do
+## ✅ TODO
 
 * [x] Éditeur complet de scripts
 * [x] Assistant IA local
-* [x] Menu dynamique
-* [ ] Authentification utilisateur
-* [ ] Thèmes customisables
-* [ ] Auto-tagging des scripts
+* [x] Menu dynamique par `categories.yaml`
+* [x] Sauvegarde des conversations
+* [ ] Authentification (à venir)
+* [ ] Système de thèmes
+* [ ] Exécution sécurisée en sandbox
 
 ---
 
 ## 🛡️ Sécurité
 
-⚠️ Le projet n’est pas sécurisé pour une exposition publique par défaut.
-Si tu veux l’ouvrir en ligne :
+⚠️ Ne pas exposer publiquement sans :
 
-* ajoute une authentification (FastAPI Users, OAuth, etc.)
-* sécurise l’exécution des scripts (`subprocess.run` à isoler)
-* sandboxe les entrées utilisateur
+* authentification (FastAPI Users, etc.),
+* restrictions sur l’exécution de scripts,
+* sandboxing des entrées.
 
 ---
 
 ## 📜 Licence
 
-MIT — libre pour tout usage personnel ou professionnel.
+MIT — usage libre personnel & pro.
 
 ---
 
-> Projet réalisé par [Kr034](https://github.com/Kr034) pour automatiser, apprendre et expérimenter ✨
+> Fait maison par [Kr034](https://github.com/Kr034) pour automatiser, apprendre et expérimenter.
+
+````
