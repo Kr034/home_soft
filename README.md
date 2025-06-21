@@ -89,23 +89,7 @@ Ensuite, l’interface `/assistant` permet de dialoguer avec le modèle local.
 ## 📁 Structure
 
 ```
-.
-├── app/
-│   └── templates/
-│       ├── layout.html
-│       ├── dashboard.html
-│       └── sections/
-│           ├── conversion.html
-│           ├── scripts.html
-│           ├── edit_script.html
-│           └── ai_assistant.html
-├── data/
-│   ├── scripts/              ← tous les scripts y sont stockés
-│   └── categories.yaml       ← gère les catégories dynamiquement
-├── static/                   ← styles, icônes, etc
-├── main.py                   ← backend principal
-├── requirements.txt
-└── README.md
+
 ```
 
 ---
