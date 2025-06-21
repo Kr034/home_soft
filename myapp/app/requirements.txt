@@ -5,3 +5,5 @@ python-multipart
 watchdog
 jinja2
 PyYAML
+requests
+markdown

@@ -1,7 +1,50 @@
-<h2 class="text-2xl font-semibold mb-2">🪄 Génération</h2>
-<p class="text-gray-600 italic">Génère automatiquement du contenu à partir d'un prompt ou d'un modèle prédéfini.</p>
+<!-- Markdown Parser -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-<form action="/generate" method="post" class="mt-4 flex flex-col gap-2">
-  <textarea name="prompt" placeholder="Décris ici ce que tu veux générer..." rows="5" class="border rounded px-2 py-1" required></textarea>
-  <input type="submit" value="Générer" class="bg-purple-600 text-white px-4 py-1 rounded self-start">
+<!-- Syntax Highlighting -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css">
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
+<script>
+  marked.setOptions({
+    highlight: function (code, lang) {
+      const validLang = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language: validLang }).value;
+    }
+  });
+</script>
+
+
+<form id="ai-form" class="flex flex-col gap-2">
+  <textarea name="prompt" id="prompt" rows="3" placeholder="Pose ta question..." class="border rounded px-3 py-2" required></textarea>
+  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded self-start">🎯 Poser une question</button>
 </form>
+
+<div id="ai-response" class="mt-4 p-4 bg-gray-100 border rounded text-sm whitespace-pre-wrap font-mono hidden"></div>
+<script>
+document.getElementById('ai-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const prompt = document.getElementById('prompt').value;
+  const responseBox = document.getElementById('ai-response');
+
+  responseBox.classList.add('hidden');
+  responseBox.innerHTML = '<em>⏳ Réponse en cours...</em>';
+  responseBox.classList.remove('hidden');
+
+  const res = await fetch('/ask-ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: prompt })
+  });
+
+  const data = await res.json();
+
+  const markdown = data.response || '❌ Aucune réponse.';
+  responseBox.innerHTML = marked.parse(markdown);
+
+  // Appliquer la coloration
+  document.querySelectorAll('#ai-response pre code').forEach((el) => {
+    hljs.highlightElement(el);
+  });
+});
+</script>

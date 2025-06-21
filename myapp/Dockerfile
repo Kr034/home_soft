@@ -1,6 +1,6 @@
 # Dockerfile
 FROM python:3.11-slim
-RUN apt-get update && apt-get install -y pandoc texlive texlive-latex-recommended texlive-xetex
+RUN apt-get update && apt-get install -y pandoc texlive texlive-latex-recommended texlive-xetex curl
 WORKDIR /app
 COPY app /app
 WORKDIR /app

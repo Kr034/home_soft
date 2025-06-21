@@ -1,12 +1,16 @@
 # app/main.py
 from fastapi import FastAPI, UploadFile, File, Form, Request
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from converter import convert_md_to_pdf
 from pathlib import Path
 import os
 import yaml
+import requests
+import json
+import datetime
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -16,8 +20,9 @@ OUTPUT_DIR = "/data/outputs"
 LOG_DIR = "/data/logs"
 PASTE_DIR = "/data/pasted"
 SCRIPTS_DIR = "/data/scripts"
+HISTORY_DIR = "/data/history"
 
-for d in [UPLOAD_DIR, OUTPUT_DIR, LOG_DIR, PASTE_DIR, SCRIPTS_DIR]:
+for d in [UPLOAD_DIR, OUTPUT_DIR, LOG_DIR, PASTE_DIR, SCRIPTS_DIR, HISTORY_DIR]:
     os.makedirs(d, exist_ok=True)
 
 def load_categories(path="categories.yaml"):
@@ -129,6 +134,71 @@ async def run_script(script_name: str = Form(...)):
     if os.path.exists(path):
         os.system(f"bash {path}")
     return RedirectResponse(url="/", status_code=303)
+
+
+@app.get("/history", response_class=HTMLResponse)
+def history_page(request: Request):
+    history_path = "/data/history/conversations.json"
+    os.makedirs("data", exist_ok=True)
+
+    if not os.path.exists(history_path) or os.path.getsize(history_path) == 0:
+        with open(history_path, "w") as f:
+            json.dump([], f)
+
+    # Chargement sécurisé
+    try:
+        with open(history_path, "r") as f:
+            conversations = json.load(f)
+    except json.JSONDecodeError:
+        conversations = []
+
+    return templates.TemplateResponse("sections/history.html", {
+        "request": request,
+        "conversations": conversations
+    })
+
+@app.post("/ask-ai")
+async def ask_ai(request: Request):
+    data = await request.json()
+    prompt = data.get("prompt", "")
+    history_path = "/data/history/conversations.json"
+
+    try:
+        r = requests.post("http://localhost:11434/api/generate", json={
+            "model": "codellama:7b-instruct",
+            "prompt": prompt,
+            "stream": False
+        })
+        result = r.json()
+        response = result.get("response", "Pas de réponse.")
+
+        # Enregistrer la discussion
+        entry = {
+            "prompt": prompt,
+            "response": response,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+
+
+        if not os.path.exists(history_path) or os.path.getsize(history_path) == 0:
+            with open(history_path, "w") as f:
+                json.dump([], f)
+
+        # Chargement sécurisé
+        try:
+            with open(history_path, "r") as f:
+                history = json.load(f)
+        except json.JSONDecodeError:
+            history = []
+
+        history.append(entry)
+
+        with open(history_path, "w") as f:
+            json.dump(history, f, indent=2)
+
+        return JSONResponse(content={"response": response})
+    except Exception as e:
+        return JSONResponse(content={"response": f"Erreur : {e}"}, status_code=500)
 
 @app.get("/scripts-list")
 async def list_scripts():
