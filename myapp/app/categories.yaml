@@ -1,0 +1,19 @@
+- id: conversion
+  label: Conversion
+  icon: 📝
+
+- id: scripts
+  label: Scripts
+  icon: 🔧
+
+- id: generation
+  label: Génération
+  icon: 🪄
+
+- id: images
+  label: Images
+  icon: 🖼️
+
+- id: audio
+  label: Audio
+  icon: 🎵

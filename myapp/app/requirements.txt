@@ -1,0 +1,7 @@
+# app/requirements.txt
+fastapi
+uvicorn
+python-multipart
+watchdog
+jinja2
+PyYAML

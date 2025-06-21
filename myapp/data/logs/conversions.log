@@ -1,0 +1,7 @@
+[FAIL] 2025-06-20 23:39:19.554271 Failed to convert: /data/pasted/Test-md-to-pdf.md
+[FAIL] 2025-06-20 23:41:03.149513 Failed to convert: /data/pasted/Test-md-to-pdf.md
+[FAIL] 2025-06-20 23:41:18.259845 Failed to convert: /data/pasted/Test-md-to-pdf2.md
+[FAIL] 2025-06-20 23:42:56.165221 Failed to convert: /data/pasted/ok.md
+[FAIL] 2025-06-20 23:45:08.904785 Failed to convert: /data/pasted/ok1.md
+[FAIL] 2025-06-21 00:06:32.941853 Failed to convert: /data/pasted/test.md
+[OK] 2025-06-21 00:07:20.776469 Converted: /data/pasted/10.md -> /data/outputs/10.pdf

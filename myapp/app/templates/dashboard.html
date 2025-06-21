@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 flex flex-col md:flex-row min-h-screen">
+  <aside class="w-full md:w-64 bg-white border-r p-4 flex-shrink-0">
+    <h1 class="text-2xl font-bold mb-4">🧰 Assistant</h1>
+    <nav class="flex flex-col gap-2">
+      {% for cat in categories %}
+        <a href="#{{ cat.id }}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded">
+          {{ cat.icon }} {{ cat.label }}
+        </a>
+      {% endfor %}
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-6">
+    {% for cat in categories %}
+      <div id="{{ cat.id }}" class="bg-white p-4 mt-6 rounded shadow">
+        {% include "sections/" ~ cat.id ~ ".html" ignore missing %}
+      </div>
+    {% endfor %}
+  </main>
+</body>
+</html>
