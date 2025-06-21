@@ -89,6 +89,39 @@ Ensuite, l’interface `/assistant` permet de dialoguer avec le modèle local.
 ## 📁 Structure
 
 ```
+.
+├── app
+│   ├── categories.yaml
+│   ├── converter.py
+│   ├── data
+│   │   └── conversations.json
+│   ├── main.py
+│   ├── __pycache__
+│   │   ├── converter.cpython-311.pyc
+│   │   ├── dashboard.cpython-311.pyc
+│   │   └── main.cpython-311.pyc
+│   ├── requirements.txt
+│   └── templates
+│       ├── dashboard.html
+│       └── sections
+│           ├── conversion.html
+│           ├── default.html
+│           ├── edit_script.html
+│           ├── generation.html
+│           ├── history.html
+│           └── scripts.html
+├── data
+│   ├── history
+│   │   └── conversations.json
+│   ├── logs
+│   │   └── conversions.log
+│   ├── outputs
+│   ├── pasted
+│   ├── scripts
+│   │   └── test_ollama.sh
+│   └── uploads
+├── docker-compose.yml
+└── Dockerfile
 
 ```
 
