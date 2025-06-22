@@ -50,6 +50,7 @@ async def dashboard(request: Request):
 
     categories = load_categories()
 
+    # Chargement des scripts
     scripts = []
     for fname in os.listdir(SCRIPTS_DIR):
         path = os.path.join(SCRIPTS_DIR, fname)
@@ -64,14 +65,25 @@ async def dashboard(request: Request):
             desc = ""
         scripts.append({"name": fname, "desc": desc})
 
-    # Récupération des discussions IA
+    # 🔍 Correction : chargement de toutes les conversations JSON
     history = []
-    if HISTORY_FILE.exists():
+    for file in Path("/data/history").glob("*.json"):
         try:
-            with open(HISTORY_FILE, "r") as f:
-                history = json.load(f)
-        except json.JSONDecodeError:
-            history = []
+            with open(file) as f:
+                content = json.load(f)
+                created_at = content.get("created_at")
+                if not created_at:
+                    # fallback : date du fichier si non incluse dans le JSON
+                    ts = file.stat().st_mtime
+                    created_at = datetime.fromtimestamp(ts).isoformat()
+                history.append({
+                    "id": file.stem,
+                    "created_at": created_at
+                })
+        except Exception as e:
+            print(f"[ERREUR] Lecture {file}: {e}")
+
+    print(f"[INFO] Chargé {len(history)} conversations.")
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
@@ -80,9 +92,8 @@ async def dashboard(request: Request):
         "logs": logs,
         "categories": categories,
         "scripts": scripts,
-        "ai_history": history
+        "ai_history": history  # 👈 utilisé dans le template
     })
-
 @app.get("/edit")
 async def edit_script_page(request: Request, name: str):
     path = os.path.join(SCRIPTS_DIR, name)
@@ -253,6 +264,17 @@ async def ask_ai_chat(request: Request):
     html = markdown2.markdown(response_text)
 
     return {"response": html}
+
+
+@app.post("/delete-chat")
+async def delete_chat(request: Request):
+    form = await request.form()
+    conv_id = form["conv_id"]
+    path = Path(f"/data/history/{conv_id}.json")
+    if path.exists():
+        path.unlink()
+    return RedirectResponse("/", status_code=303)
+
 
 @app.get("/scripts-list")
 async def list_scripts():

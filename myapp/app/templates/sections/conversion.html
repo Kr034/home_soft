@@ -2,39 +2,39 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
   <!-- Upload d'un fichier -->
-  <div class="bg-white p-4 rounded shadow">
-    <h3 class="text-lg font-semibold mb-2">📁 Uploader un fichier Markdown</h3>
+  <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+    <h3 class="text-lg font-semibold mb-2 dark:text-white">📁 Uploader un fichier Markdown</h3>
     <form action="/upload" method="post" enctype="multipart/form-data" class="flex gap-2">
-      <input type="file" name="file" required class="border rounded px-2 py-1">
+      <input type="file" name="file" required class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-600 dark:text-white">
       <input type="submit" value="Uploader" class="bg-blue-600 text-white px-4 py-1 rounded">
     </form>
   </div>
 
   <!-- Coller du markdown -->
-  <div class="bg-white p-4 rounded shadow">
-    <h3 class="text-lg font-semibold mb-2">📋 Coller du contenu Markdown</h3>
+  <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+    <h3 class="text-lg font-semibold mb-2 dark:text-white">📋 Coller du contenu Markdown</h3>
     <form action="/paste" method="post" class="flex flex-col gap-2">
-      <input type="text" name="name" placeholder="Nom du fichier" class="border rounded px-2 py-1" required>
-      <textarea name="content" placeholder="# Mon markdown..." rows="6" class="border rounded px-2 py-1" required></textarea>
+      <input type="text" name="name" placeholder="Nom du fichier" class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-600 dark:text-white" required>
+      <textarea name="content" placeholder="# Mon markdown..." rows="6" class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-600 dark:text-white" required></textarea>
       <input type="submit" value="Convertir & Sauvegarder" class="bg-green-600 text-white px-4 py-1 rounded">
     </form>
   </div>
 </div>
 
 <!-- Liste des fichiers uploadés -->
-<div class="bg-white p-4 mt-6 rounded shadow">
-  <h3 class="text-lg font-semibold mb-2">📥 Fichiers en attente</h3>
-  <ul class="list-disc ml-6">
+<div class="bg-white dark:bg-gray-800 p-4 mt-6 rounded shadow">
+  <h3 class="text-lg font-semibold mb-2 dark:text-white">📥 Fichiers en attente</h3>
+  <ul class="list-disc ml-6 text-gray-700 dark:text-gray-300">
     {% for file in uploads %}
       <li class="my-1">{{ file }}
         <form action="/convert-file" method="post" class="inline">
           <input type="hidden" name="filename" value="{{ file }}">
-          <input type="submit" value="Convertir" class="ml-2 text-blue-600">
+          <input type="submit" value="Convertir" class="ml-2 text-blue-600 dark:text-blue-400">
         </form>
         <form action="/delete" method="post" class="inline">
           <input type="hidden" name="filename" value="{{ file }}">
           <input type="hidden" name="filetype" value="upload">
-          <input type="submit" value="🗑️" class="ml-2 text-red-600">
+          <input type="submit" value="🗑️" class="ml-2 text-red-600 dark:text-red-400">
         </form>
       </li>
     {% endfor %}
@@ -42,16 +42,16 @@
 </div>
 
 <!-- Liste des PDFs générés -->
-<div class="bg-white p-4 mt-6 rounded shadow">
-  <h3 class="text-lg font-semibold mb-2">📤 PDF générés</h3>
-  <ul class="list-disc ml-6">
+<div class="bg-white dark:bg-gray-800 p-4 mt-6 rounded shadow">
+  <h3 class="text-lg font-semibold mb-2 dark:text-white">📤 PDF générés</h3>
+  <ul class="list-disc ml-6 text-gray-700 dark:text-gray-300">
     {% for file in outputs %}
       <li class="my-1">
-        <a href="/static/outputs/{{ file }}" target="_blank" class="text-green-700 underline">{{ file }}</a>
+        <a href="/static/outputs/{{ file }}" target="_blank" class="text-green-700 dark:text-green-400 underline">{{ file }}</a>
         <form action="/delete" method="post" class="inline">
           <input type="hidden" name="filename" value="{{ file }}">
           <input type="hidden" name="filetype" value="output">
-          <input type="submit" value="🗑️" class="ml-2 text-red-600">
+          <input type="submit" value="🗑️" class="ml-2 text-red-600 dark:text-red-400">
         </form>
       </li>
     {% endfor %}
@@ -59,9 +59,9 @@
 </div>
 
 <!-- Historique -->
-<div class="bg-white p-4 mt-6 rounded shadow">
-  <h3 class="text-lg font-semibold mb-2">📚 Historique des conversions</h3>
-  <pre class="text-sm text-gray-600 whitespace-pre-wrap">
+<div class="bg-white dark:bg-gray-800 p-4 mt-6 rounded shadow">
+  <h3 class="text-lg font-semibold mb-2 dark:text-white">📚 Historique des conversions</h3>
+  <pre class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
 {% for line in logs %}{{ line }}{% endfor %}
   </pre>
 </div>

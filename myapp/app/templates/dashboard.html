@@ -1,32 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <title>Dashboard</title>
   <meta charset="UTF-8" />
+  <title>Dashboard</title>
+
+  <!-- TailwindCSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    };
+  </script>
+
+  <!-- Typographie et Markdown -->
   <link href="https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.5.9/dist/typography.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-
 </head>
-<body class="bg-gray-100 text-gray-800 flex flex-col md:flex-row min-h-screen">
-  <aside class="w-full md:w-64 bg-white border-r p-4 flex-shrink-0">
+
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-white flex flex-col md:flex-row min-h-screen">
+
+  <!-- Menu latéral -->
+  <aside class="w-full md:w-64 bg-white dark:bg-gray-800 dark:text-white border-r p-4 flex-shrink-0">
     <h1 class="text-2xl font-bold mb-4">🧰 Assistant</h1>
     <nav class="flex flex-col gap-2">
       {% for cat in categories %}
-        <a href="#{{ cat.id }}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded">
+        <a href="#{{ cat.id }}" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium px-4 py-2 rounded">
           {{ cat.icon }} {{ cat.label }}
         </a>
       {% endfor %}
     </nav>
   </aside>
 
+  <!-- Contenu principal -->
   <main class="flex-1 p-6">
     {% for cat in categories %}
-      <div id="{{ cat.id }}" class="bg-white p-4 mt-6 rounded shadow">
+      <div id="{{ cat.id }}" class="bg-white dark:bg-gray-800 p-4 mt-6 rounded shadow">
         {% include "sections/" ~ cat.id ~ ".html" ignore missing %}
       </div>
     {% endfor %}
+
+    <!-- Bouton de thème -->
+    <div class="mt-6">
+      <button onclick="toggleDarkMode()" class="px-4 py-2 text-sm rounded bg-gray-300 dark:bg-gray-700 dark:text-white">
+        🌙 Thème sombre
+      </button>
+    </div>
   </main>
+
+  <!-- Script thème -->
+  <script>
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    });
+  </script>
+
 </body>
 </html>

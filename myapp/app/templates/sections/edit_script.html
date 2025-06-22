@@ -1,25 +1,48 @@
-<!-- app/templates/edit_script.html -->
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <title>Modifier {{ script_name }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
 </head>
-<body class="bg-gray-100 p-8">
-  <div class="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-6">
-    <h1 class="text-2xl font-bold mb-4">✏️ Modifier le script : <span class="font-mono">{{ script_name }}</span></h1>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-8">
+  <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
+    <h1 class="text-2xl font-bold mb-4">
+      ✏️ Modifier le script : <span class="font-mono">{{ script_name }}</span>
+    </h1>
 
     <form action="/edit-script" method="post" class="space-y-4">
       <input type="hidden" name="script_name" value="{{ script_name }}">
-      <textarea name="script_content" rows="20" class="w-full border rounded p-2 font-mono text-sm">{{ script_content }}</textarea>
+      <textarea
+        name="script_content"
+        rows="20"
+        class="w-full border dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 rounded p-2 font-mono text-sm"
+      >{{ script_content }}</textarea>
 
-      <div class="flex justify-between">
-        <a href="/" class="text-blue-600 hover:underline">⬅ Retour au dashboard</a>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">💾 Sauvegarder</button>
+      <div class="flex justify-between items-center">
+        <a href="/" class="text-blue-600 dark:text-blue-400 hover:underline">⬅ Retour au dashboard</a>
+        <button
+          type="submit"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+        >
+          💾 Sauvegarder
+        </button>
       </div>
     </form>
   </div>
+
+  <!-- Appliquer le thème stocké -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (localStorage.getItem("theme") === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    });
+  </script>
 </body>
 </html>
